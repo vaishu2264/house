@@ -109,7 +109,7 @@ const Tenantlogin = () => {
           <p><strong>Cost:</strong> {selectedImage.cost}</p>
           <p><strong>Area:</strong> {selectedImage.area}</p>
           <p><strong>Description:</strong> {selectedImage.description}</p>
-          <button className="ssubmit" onClick={handleBookClick}>Book</button>
+          <button className="ssubmit" onClick={handleBookClick}>Request</button>
         </div>
       </div>
     );
