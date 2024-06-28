@@ -6,12 +6,13 @@ import user_icon from '../assets/person.png';
 import pass_icon from '../assets/password.png';
 import Navbar from './Navbar';
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
     const [userType, setUserType] = useState("");
     const [email,setemail] = useState('');
     const [password,setpassword] = useState('');
-
+    const navigate = useNavigate()
 
   const handleregister = async(e)=>{
     e.preventDefault();
@@ -23,6 +24,7 @@ const Register = () => {
         };
         const response = await axios.post('http://localhost:5000/houseusers',newUser);
         console.log('user is created',response.data);
+        navigate('/Login')
     } catch (error) {
         console.log(error);
     }

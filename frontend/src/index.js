@@ -1,18 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Login from './Components/login';
 import Register from './Components/Register';
 import Home from './Components/Home';
-import Admin from './Components/Admin';
-import Profile from './Components/Profile';
+import Tenantlogin from './Components/Tenantlogin';
+import Ownerlogin from './Components/Ownerlogin';
+//import Aboutus from './Components/Aboutus';
+//import Contactus from './Components/contactus';
+
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -27,13 +28,21 @@ const router = createBrowserRouter([
     element: <Register/>,
   },
   {
-    path: "admin",
-    element: <Admin/>,
+    path: "tenant",
+    element: <Tenantlogin/>,
   },
   {
-    path: "profile",
-    element: <Profile/>,
+    path: "owner",
+    element: <Ownerlogin/>,
   },
+  // {
+  //   path: "aboutus",
+  //   element: <Aboutus/>,
+  // },
+  // {
+  //   path: "contactus",
+  //   element: <Contactus/>,
+  // },
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

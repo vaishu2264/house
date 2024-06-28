@@ -5,19 +5,56 @@ import user_icon from '../assets/person.png';
 import pass_icon from '../assets/password.png';
 import Navbar from './Navbar';
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [userType, setUserType] = useState('');
+    const [email,setemail] = useState('');
+    const [password,setpassword] = useState('');
+    const navigate = useNavigate()
 
     const handleUserTypeChange = (type) => {
         setUserType(type);
     };
 
+    const handlelogin = async(e)=>{
+        e.preventDefault();
+        if (!email || !password || !userType) {
+            alert('Please fill in all fields');
+            return;
+        }
+    
+        try {
+            const response = await fetch('http://localhost:5000/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password, userType })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                if (userType === 'Owner') {
+                    navigate('/owner');
+                } else if (userType === 'Tenant') {
+                    navigate('/tenant');
+                }
+                localStorage.setItem("ownerId", email);
+            } else {
+                alert(data.message || 'Login failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('An error occurred:', error);
+            alert('An error occurred. Please try again later.');
+        }
+        
+      }
+
     return (
         <div>
             <div className='backgroundd'>
                 <Navbar></Navbar>
-                <form>
+                <form onSubmit={handlelogin}>
                     <div className="container">
                         <div className="header">
                             <div className="text">Login</div>
@@ -27,12 +64,12 @@ const Login = () => {
                         <div className="inputs">
                             <div className="input">
                                 <img src={mail_icon} alt="" />
-                                <input type="email" placeholder="email"  />
+                                <input type="email" placeholder="email" value={email} onChange={(e)=>setemail(e.target.value)} />
                             </div>
 
                             <div className="input">
                                 <img src={pass_icon} alt="" />
-                                <input type="password" placeholder="password" />
+                                <input type="password" placeholder="password" value={password} onChange={(e)=>setpassword(e.target.value)}/>
                             </div>
 
                             <div className="input">
