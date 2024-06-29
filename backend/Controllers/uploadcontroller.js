@@ -16,9 +16,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 exports.createrenter = async (req, res) => {
-    const { category, ownername, phoneno, cost, area, description,ownerId } = req.body;
+    const { category, ownername, phoneno, cost, area, description, ownerId } = req.body;
     const photo = req.file ? req.file.filename : null;
-     // Assuming req.user contains the logged-in user
+    // Assuming req.user contains the logged-in user
 
     try {
         const newUpload = new uploadModel({
@@ -29,7 +29,8 @@ exports.createrenter = async (req, res) => {
             area,
             description,
             photo,
-            ownerId
+            ownerId,
+            appliedTenants: []
         });
         await newUpload.save();
         res.status(201).send(newUpload);

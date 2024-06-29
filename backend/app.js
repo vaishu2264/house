@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const path = require('path')
 const loginroutes = require('./routes/loginroutes')
 const app = express()
-const PORT=5000;
+const PORT = 5000;
 
 const cors = require('cors');
 app.use(
@@ -13,28 +13,19 @@ app.use(
 )
 
 mongoose.connect('mongodb://localhost:27017/')
-.then(()=>{
-    console.log('Connection established')
-})
-.catch((err)=>{
-    console.log('error connecting to database',err.message)
-})
+    .then(() => {
+        console.log('Connection established')
+    })
+    .catch((err) => {
+        console.log('error connecting to database', err.message)
+    })
 
 app.use(express.json())
 app.use(loginroutes)
-app.use('/images', express.static(path.join(__dirname,'images')));
-app.use('/',loginroutes)
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/', loginroutes)
 
 
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
     console.log('app is serving')
 })
-
-
-
-
-
-
-
-
-
