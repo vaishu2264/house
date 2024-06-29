@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Navbar2 from './Navbar2';
 import '../styles/owner.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Ownerlogin = ({ ownerId }) => {
+    const navigate = useNavigate();
+
     const [activeSection, setActiveSection] = useState('dashboard');
     const [formData, setFormData] = useState({
         category: '',
@@ -15,21 +18,91 @@ const Ownerlogin = ({ ownerId }) => {
         description: ''
     });
     const [uploadedImages, setUploadedImages] = useState([]);
+    const [notifications, setNotifications] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [assignedHouses, setAssignedHouses] = useState([]);
 
     useEffect(() => {
         if (activeSection === 'dashboard') {
             fetchUploadedImages();
+        } else if (activeSection === 'notifications') {
+            fetchNotifications();
+        } else if (activeSection === 'Rented') {
+            fetchAssignedHouses();
         }
     }, [activeSection]);
 
+    const handleAssignTenant = async (houseId, tenantId) => {
+        console.log(houseId, tenantId);
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await axios.put(`http://localhost:5000/select-tenant/${houseId}/${tenantId}`, {}, {
+                headers: {
+                    'Authorization': `${token}`
+                }
+            });
+            console.log(response.data);
+            fetchNotifications();
+        } catch (error) {
+            console.error('Error assigning tenant:', error);
+        }
+    };
+
+    const fetchAssignedHouses = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:5000/houses/assigned', {
+                headers: {
+                    'Authorization': `${token}`
+                }
+            });
+            setAssignedHouses(response.data);
+        } catch (error) {
+            console.error('Error fetching assigned houses:', error);
+        }
+    };
+
     const fetchUploadedImages = async () => {
         try {
-            const ownerId = localStorage.getItem("ownerId")
-            const response = await axios.get(`http://localhost:5000/uploads/owner/${ownerId}`);
+            const token = localStorage.getItem("token");
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await axios.get('http://localhost:5000/uploads/owner', {
+                headers: {
+                    'Authorization': `${token}`
+                }
+            });
             setUploadedImages(response.data);
         } catch (error) {
             console.error('Error fetching images:', error);
+        }
+    };
+
+    const fetchNotifications = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await axios.get('http://localhost:5000/notifications', {
+                headers: {
+                    'Authorization': `${token}`
+                }
+            });
+            setNotifications(response.data);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
         }
     };
 
@@ -40,7 +113,6 @@ const Ownerlogin = ({ ownerId }) => {
 
     const handleFileChange = (e) => {
         setFormData({ ...formData, photo: e.target.files[0] });
-        console.log(e.target.files[0]);
     };
 
     const handleSubmit = async (e) => {
@@ -55,15 +127,19 @@ const Ownerlogin = ({ ownerId }) => {
         for (const key in formData) {
             data.append(key, formData[key]);
         }
-        data.append('ownerId', localStorage.getItem("ownerId"));
 
         try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                navigate('/login');
+                return;
+            }
             const response = await axios.post('http://localhost:5000/uploads', data, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `${token}`
                 }
             });
-            console.log('upload done', response.data);
             setFormData({
                 category: '',
                 ownername: '',
@@ -71,7 +147,7 @@ const Ownerlogin = ({ ownerId }) => {
                 cost: '',
                 area: '',
                 photo: null,
-                description: '',
+                description: ''
             });
             fetchUploadedImages();
         } catch (error) {
@@ -82,6 +158,26 @@ const Ownerlogin = ({ ownerId }) => {
     const handleImageClick = (image) => {
         setSelectedImage(image);
     };
+
+    const handleUnassignTenant = async (houseId) => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await axios.put(`http://localhost:5000/unassign-tenant/${houseId}`, {}, {
+                headers: {
+                    'Authorization': `${token}`
+                }
+            });
+            console.log(response.data);
+            fetchAssignedHouses();
+        } catch (error) {
+            console.error('Error unassigning tenant:', error);
+        }
+    };
+
 
     const renderSection = () => {
         if (selectedImage) {
@@ -181,7 +277,56 @@ const Ownerlogin = ({ ownerId }) => {
                     </div>
                 );
             case 'Rented':
-                return <div>empty</div>;
+                return (
+                    <div>
+                        <h2>Rented Houses</h2>
+                        <div>
+                            {assignedHouses.length > 0 ? (
+                                assignedHouses.map((house, index) => (
+                                    <div key={index}>
+                                        <h3>{house.category} - {house.ownername}</h3>
+                                        <p><strong>Tenant Email:</strong> {house.currentTenant.email}</p>
+                                        <p><strong>Cost:</strong> ${house.cost}</p>
+                                        <button onClick={() => handleUnassignTenant(house._id)}>Unassign Tenant</button>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No houses are currently rented out.</p>
+                            )}
+                        </div>
+                    </div>
+                );
+
+            case 'notifications':
+                return (
+                    <div>
+                        <h2>Notifications</h2>
+                        <div className="notifications-container">
+                            {notifications.length > 0 ? (
+                                notifications.map((notification, index) => (
+                                    <div key={index} className="notification-card">
+                                        <h3>House: {notification.houseName}</h3>
+                                        <p><strong>Owner Name:</strong> {notification.ownerName}</p>
+                                        <p><strong>House ID:</strong> {notification.houseId}</p>
+                                        <h4>Applied Tenants:</h4>
+                                        {notification.appliedTenants.length > 0 ? (
+                                            notification.appliedTenants.map((tenant, idx) => (
+                                                <div key={idx}>
+                                                    <p>{tenant.email} has requested for this house.</p>
+                                                    <button onClick={() => handleAssignTenant(notification.houseId, tenant._id)}>Assign</button>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p>No applicants for this house yet.</p>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No notifications available.</p>
+                            )}
+                        </div>
+                    </div>
+                );
             default:
                 return <div>Welcome to the Owner Dashboard!</div>;
         }
@@ -206,7 +351,6 @@ const Ownerlogin = ({ ownerId }) => {
             </div>
         );
     };
-    
 
     return (
         <div>
@@ -216,6 +360,7 @@ const Ownerlogin = ({ ownerId }) => {
                     <button className={activeSection === 'dashboard' ? 'active' : ''} onClick={() => { setActiveSection('dashboard'); setSelectedImage(null); }}>Dashboard</button>
                     <button className={activeSection === 'upload' ? 'active' : ''} onClick={() => { setActiveSection('upload'); setSelectedImage(null); }}>Upload</button>
                     <button className={activeSection === 'Rented' ? 'active' : ''} onClick={() => { setActiveSection('Rented'); setSelectedImage(null); }}>Rented</button>
+                    <button className={activeSection === 'notifications' ? 'active' : ''} onClick={() => { setActiveSection('notifications'); setSelectedImage(null); }}>Notifications</button>
                 </div>
                 <div className="right-section">
                     {renderSection()}

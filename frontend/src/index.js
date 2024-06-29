@@ -17,23 +17,23 @@ import {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home/>,
+    element: <Home />,
   },
   {
     path: "login",
-    element: <Login/>,
+    element: <Login />,
   },
   {
     path: "register",
-    element: <Register/>,
+    element: <Register />,
   },
   {
     path: "tenant",
-    element: <Tenantlogin/>,
+    element: <Tenantlogin />,
   },
   {
     path: "owner",
-    element: <Ownerlogin/>,
+    element: <Ownerlogin />,
   },
   // {
   //   path: "aboutus",
@@ -47,9 +47,9 @@ const router = createBrowserRouter([
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
- 
-      <RouterProvider router={router} />
- 
+
+  <RouterProvider router={router} />
+
 );
 
 // If you want to start measuring performance in your app, pass a function

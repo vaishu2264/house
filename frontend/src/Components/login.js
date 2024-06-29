@@ -9,21 +9,21 @@ import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [userType, setUserType] = useState('');
-    const [email,setemail] = useState('');
-    const [password,setpassword] = useState('');
+    const [email, setemail] = useState('');
+    const [password, setpassword] = useState('');
     const navigate = useNavigate()
 
     const handleUserTypeChange = (type) => {
         setUserType(type);
     };
 
-    const handlelogin = async(e)=>{
+    const handlelogin = async (e) => {
         e.preventDefault();
         if (!email || !password || !userType) {
             alert('Please fill in all fields');
             return;
         }
-    
+
         try {
             const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
@@ -39,7 +39,7 @@ const Login = () => {
                 } else if (userType === 'Tenant') {
                     navigate('/tenant');
                 }
-                localStorage.setItem("ownerId", email);
+                localStorage.setItem("token", data.token);
             } else {
                 alert(data.message || 'Login failed. Please try again.');
             }
@@ -47,8 +47,8 @@ const Login = () => {
             console.error('An error occurred:', error);
             alert('An error occurred. Please try again later.');
         }
-        
-      }
+
+    }
 
     return (
         <div>
@@ -64,12 +64,12 @@ const Login = () => {
                         <div className="inputs">
                             <div className="input">
                                 <img src={mail_icon} alt="" />
-                                <input type="email" placeholder="email" value={email} onChange={(e)=>setemail(e.target.value)} />
+                                <input type="email" placeholder="email" value={email} onChange={(e) => setemail(e.target.value)} />
                             </div>
 
                             <div className="input">
                                 <img src={pass_icon} alt="" />
-                                <input type="password" placeholder="password" value={password} onChange={(e)=>setpassword(e.target.value)}/>
+                                <input type="password" placeholder="password" value={password} onChange={(e) => setpassword(e.target.value)} />
                             </div>
 
                             <div className="input">

@@ -8,7 +8,17 @@ const uploadSchema = new mongoose.Schema({
     area: String,
     description: String,
     photo: String,
-    ownerId: { type:String } // Assuming 'User' is your user model
+    ownerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'houseusers'
+    },
+    appliedTenants: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'houseusers'
+        }
+    ],
+    currentTenant: { type: mongoose.Schema.Types.ObjectId, ref: 'houseusers', default: null }
 });
 
 const Upload = mongoose.model('Upload', uploadSchema);
