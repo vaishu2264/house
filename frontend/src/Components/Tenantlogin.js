@@ -2,38 +2,103 @@ import { React, useState, useEffect } from 'react'
 import Navbar2 from './Navbar2'
 import axios from 'axios'
 import '../styles/tenant.css'
+import { useNavigate } from 'react-router-dom'
 
 const Tenantlogin = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [allImages, setUploadedImages] = useState([]);
+  const [rentedHouses, setRentedHouses] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [requestedHouses, setRequestedHouses] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (activeSection === 'dashboard') {
       fetchAllImages();
+    } else if (activeSection === 'Rented') {
+      fetchRentedHouses();
+    } else if (activeSection === 'Requested') {
+      fetchRequestedHouses();
     }
   }, [activeSection]);
 
   const fetchAllImages = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     try {
-      const response = await axios.get('http://localhost:5000/uploads');
+      const response = await axios.get('http://localhost:5000/active-openings', {
+        headers: {
+          'Authorization': `${token}`
+        }
+      });
       setUploadedImages(response.data);
     } catch (error) {
       console.error('Error fetching images:', error);
     }
   };
 
+
   const handleImageClick = (image) => {
     setSelectedImage(image);
   };
 
-  const handleBookClick = () => {
-    // Handle the book action here
-    console.log('Book button clicked for:', selectedImage);
+  const handleBookClick = async () => {
+    if (!selectedImage) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const response = await axios.post(`http://localhost:5000/add/${selectedImage._id}`, null, {
+        headers: {
+          'Authorization': `${token}`
+        }
+      });
+      console.log('Request submitted successfully:', response.data);
+    } catch (error) {
+      console.error('Error requesting house:', error);
+    }
   };
 
-  
+  const fetchRequestedHouses = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login')
+      return;
+    }
+    try {
+      const response = await axios.get('http://localhost:5000/requested', {
+        headers: { Authorization: `${token}` }
+      });
+      setRequestedHouses(response.data);
+    } catch (error) {
+      console.error('Error fetching requested houses:', error);
+    }
+  };
+
+  const fetchRentedHouses = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    try {
+      const response = await axios.get('http://localhost:5000/active-notifications', {
+        headers: {
+          'Authorization': `${token}`
+        }
+      });
+      setRentedHouses(response.data);
+    } catch (error) {
+      console.error('Error fetching rented houses:', error);
+    }
+  };
 
 
   const handleCategoryClick = (category) => {
@@ -87,8 +152,45 @@ const Tenantlogin = () => {
             </div>
           </div>
         );
+      case 'Requested':
+        return (
+          <div>
+            <h2>Requested Houses</h2>
+            <div className="requested-houses-container">
+              {requestedHouses.length > 0 ? (
+                requestedHouses.map((house, index) => (
+                  <div key={index} className="requested-house-card">
+                    <img src={`http://localhost:5000/images/${house.photo}`} alt={house.description} className="requested-house-image" />
+                    <h3>{house.category} - {house.ownername}</h3>
+                    <p><strong>Cost:</strong> ${house.cost}</p>
+                    <p><strong>Area:</strong> {house.area}</p>
+                    <p><strong>Description:</strong> {house.description}</p>
+                  </div>
+                ))
+              ) : (
+                <p>Not Found Any Such House</p>
+              )}
+            </div>
+          </div>
+        );
       case 'Rented':
-        return <div>empty</div>;
+        return (
+          <div>
+            <h2>Rented Houses</h2>
+            <div className="rented-houses-container">
+              {rentedHouses.length > 0 ? (
+                rentedHouses.map((house, index) => (
+                  <div key={index} className="rented-house-card">
+                    <h3>{house.category} - {house.ownername}</h3>
+                    <p><strong>Cost:</strong> ${house.cost}</p>
+                  </div>
+                ))
+              ) : (
+                <p>No houses currently rented.</p>
+              )}
+            </div>
+          </div>
+        );
       default:
         return <div>Welcome to the Owner Dashboard!</div>;
     }
@@ -122,6 +224,7 @@ const Tenantlogin = () => {
         <div className="left-section">
           <button className={activeSection === 'dashboard' ? 'active' : ''} onClick={() => setActiveSection('dashboard')}>Dashboard</button>
           <button className={activeSection === 'Rented' ? 'active' : ''} onClick={() => setActiveSection('Rented')}>Rented</button>
+          <button className={activeSection === 'Requested' ? 'active' : ''} onClick={() => setActiveSection('Requested')}>Requested</button>
         </div>
         <div className="right-section">
           {renderSection()}

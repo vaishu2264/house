@@ -1,20 +1,21 @@
 const express = require('express');
-
 const router = express.Router();
-const loginController = require('../Controllers/logincontroller')
-const updatecontroller = require('../Controllers/uploadcontroller')
+const loginController = require('../Controllers/logincontroller');
+const updateController = require('../Controllers/uploadcontroller');
 
-router.get('/houseusers',loginController.getAllUsers)
-router.get('/houseusers/:id',loginController.getUserById)
-router.post('/houseusers',loginController.createUser)
-router.delete('/houseusers/:id',loginController.deleteUser)
-router.put('/houseusers/:id',loginController.updateUser)
-router.post('/login', loginController.authenticateUser)
-router.post('/uploads', updatecontroller.uploadMiddleware, updatecontroller.createrenter);
-router.get('/uploads', updatecontroller.getAllUploads);
-router.get('/uploads/owner/:ownerId', updatecontroller.getUploadsByOwner);
+router.post('/houseusers', loginController.createUser);
+router.post('/login', loginController.authenticateUser);
+
+router.post('/uploads', updateController.uploadMiddleware, updateController.createrenter);
+router.get('/uploads/owner', updateController.getUploadsByOwner);
+router.post('/add/:houseId', updateController.applyForHome);
+router.put('/select-tenant/:houseId/:tenantId', updateController.updateCurrentTenant);
+router.get('/notifications', updateController.getNotifications);
+router.put('/unassign-tenant/:houseId', updateController.unAssignTenant);
+router.get('/houses/assigned', updateController.assignedHouses);
+router.get('/active-notifications', updateController.getUploads);
+router.get('/active-openings', updateController.getAvailableUploads);
+router.get('/requested', updateController.getRequestedUploads);
 
 
 module.exports = router;
-
-
